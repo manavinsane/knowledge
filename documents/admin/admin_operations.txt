@@ -1,9 +1,151 @@
 Admin Operations
 
-This document is restricted to ADMIN users.
+Access level: ADMIN
+Visible to: ADMIN
 
-Admins can access system configuration procedures, database migration steps,
-role management rules, Pinecone index maintenance notes, and production support
-operations.
+This document is restricted to ADMIN users. It contains system configuration
+procedures, database migration steps, role management rules, Pinecone index
+maintenance notes, production support operations, and incident response
+guidance.
 
-HR and EMPLOYEE users should not receive answers from this document.
+The internal admin runbook code is ADM-RUN-900. The migration verification
+checklist is ADM-DB-77. The role audit code is ADM-ROLE-AUDIT. The vector index
+maintenance code is ADM-VECTOR-1536.
+
+Page 1: System Configuration
+
+The admin system maintenance window is Sunday from 1:00 AM to 3:00 AM.
+Production environment changes require a rollback note and approval from the
+platform owner. Admins must rotate service credentials after any incident
+involving secret exposure.
+
+System configuration checklist:
+- Confirm change ticket approval.
+- Confirm rollback note.
+- Confirm platform owner approval.
+- Confirm monitoring window.
+- Apply change during maintenance window.
+- Validate health checks.
+- Record completion notes.
+
+System configuration test facts:
+- Admin runbook code: ADM-RUN-900.
+- Maintenance window: Sunday, 1:00 AM to 3:00 AM.
+- Production changes require platform owner approval.
+- Secret exposure requires service credential rotation.
+
+Page 2: Database Migration
+
+Alembic migrations are applied with python -m alembic upgrade head. Migration
+scripts must be reviewed before production deployment. Rollbacks require a
+tested downgrade path or a documented forward-fix plan. The migration
+verification checklist is ADM-DB-77.
+
+Migration checklist:
+- Review generated migration.
+- Confirm enum changes are intentional.
+- Confirm timestamp column types.
+- Confirm indexes and constraints.
+- Back up production database when required.
+- Run migration in staging.
+- Verify application startup.
+- Apply migration in production window.
+- Run smoke tests.
+
+Database test facts:
+- Migration command: python -m alembic upgrade head.
+- Migration checklist code: ADM-DB-77.
+- Rollback requirement: tested downgrade or documented forward-fix plan.
+- Migration scripts require review before production deployment.
+
+Page 3: Role Management
+
+ADMIN can assign HR, EMPLOYEE, and ADMIN roles. HR can request role changes,
+but cannot directly grant ADMIN access. EMPLOYEE users cannot change roles. The
+role audit code is ADM-ROLE-AUDIT.
+
+Role management process:
+- Confirm requester identity.
+- Confirm business justification.
+- Check manager approval.
+- Check current role.
+- Apply approved role.
+- Record audit note.
+- Notify requester with non-sensitive confirmation.
+
+Role audit checks:
+- Confirm ADMIN grants have approval.
+- Confirm HR grants match business need.
+- Confirm EMPLOYEE users did not self-assign roles.
+- Confirm role changes are logged.
+
+Role test facts:
+- Role audit code: ADM-ROLE-AUDIT.
+- ADMIN can assign HR, EMPLOYEE, and ADMIN.
+- HR cannot directly grant ADMIN access.
+- EMPLOYEE users cannot change roles.
+
+Page 4: Pinecone and Vector Index Maintenance
+
+Admins can recreate the rag-bms index when embedding dimensions change. The
+current embedding dimension is 1536 for text-embedding-3-small. Metadata
+filters must include visibility before documents are available to the chatbot.
+The vector index maintenance code is ADM-VECTOR-1536.
+
+Vector maintenance checklist:
+- Confirm embedding model name.
+- Confirm embedding dimension.
+- Confirm Pinecone index metric.
+- Confirm namespace strategy if used.
+- Confirm metadata includes visibility.
+- Re-ingest documents after metadata changes.
+- Test EMPLOYEE, HR, and ADMIN retrieval separately.
+
+Vector test facts:
+- Vector index maintenance code: ADM-VECTOR-1536.
+- Current embedding dimension: 1536.
+- Embedding model: text-embedding-3-small.
+- Metadata filter key: visibility.
+
+Page 5: Production Support and Incidents
+
+Production incidents should be logged with severity, owner, start time, impact,
+mitigation, and follow-up action. Admin users coordinate with service owners
+and platform owners. Public updates should avoid secrets, customer-sensitive
+details, or restricted system internals.
+
+Incident workflow:
+- Acknowledge alert.
+- Assign incident owner.
+- Assess impact.
+- Apply mitigation.
+- Monitor recovery.
+- Record timeline.
+- Create follow-up action.
+- Rotate secrets if exposure is suspected.
+
+Incident test facts:
+- Secret exposure requires credential rotation.
+- Incident notes must include owner and timeline.
+- Public incident updates must avoid restricted system internals.
+- Platform owner approval is required for production environment changes.
+
+Page 6: Admin FAQ
+
+Question: What is the internal admin runbook code?
+Answer: ADM-RUN-900.
+
+Question: What is the migration verification checklist?
+Answer: ADM-DB-77.
+
+Question: What is the role audit code?
+Answer: ADM-ROLE-AUDIT.
+
+Question: What is the vector index maintenance code?
+Answer: ADM-VECTOR-1536.
+
+Question: What command applies Alembic migrations?
+Answer: python -m alembic upgrade head.
+
+Question: Can HR or EMPLOYEE users access this document?
+Answer: No. This document is restricted to ADMIN users only.

@@ -1,10 +1,135 @@
 Company Overview
 
-This document is public inside the organization. It can be accessed by ADMIN,
-HR, and EMPLOYEE users.
+Access level: PUBLIC
+Visible to: ADMIN, HR, EMPLOYEE
 
-The company uses the internal knowledge base for policy lookup, onboarding
-support, engineering references, and operational answers.
+This document is public inside the organization. It can be accessed by every
+logged-in user. It contains general company information, public contacts,
+shared office procedures, general knowledge base guidance, and non-sensitive
+operational notes.
 
-If a user asks about general company information, office hours, support channels,
-or public internal documentation, this public document can be used.
+The company name used for internal examples is BMS Knowledge Systems. The main
+office is open Monday through Friday from 10:00 AM to 6:30 PM. The public help
+desk email is support@bms.example. The weekly public town hall happens every
+Friday at 4:00 PM. The public company code is BMS-PUBLIC-100.
+
+Page 1: Company Identity and Public Contacts
+
+BMS Knowledge Systems maintains an internal knowledge base for policy lookup,
+onboarding support, engineering references, and operational answers. The public
+portion of the knowledge base is intended for everyday questions that do not
+include confidential employee records, salary details, production credentials,
+or restricted maintenance procedures.
+
+Public contact directory:
+- People Operations desk: general onboarding and public HR guidance.
+- Service Desk: laptops, software access, Wi-Fi help, and public IT questions.
+- Front Office team: visitors, meeting rooms, courier support, and facilities.
+- Finance help desk: public reimbursement process questions.
+- Security reception: access badge replacement and visitor registration.
+
+The public office Wi-Fi help channel is Service Desk. The public facilities
+contact is the Front Office team. The public onboarding contact is the People
+Operations desk. The public support alias is support@bms.example.
+
+Page 2: Office Hours and Workplace Norms
+
+The standard public office schedule is 10:00 AM to 6:30 PM, Monday through
+Friday. Employees may coordinate flexible working arrangements with their
+manager according to their team norms. Public conference rooms can be booked
+through the shared calendar system. Visitors should be registered at least one
+business day before arrival.
+
+General workplace expectations:
+- Keep shared rooms clean after meetings.
+- Use headphones in open collaboration areas when attending calls.
+- Report broken equipment to the Service Desk.
+- Keep visitor badges visible inside the office.
+- Do not leave confidential papers in meeting rooms.
+
+The weekly public town hall is every Friday at 4:00 PM. The town hall includes
+company announcements, project highlights, operational updates, and reminders
+about shared services. General announcements are retained for one year. The
+public document retention note says general announcements are retained for one
+year.
+
+Page 3: Knowledge Base Usage
+
+The knowledge base is organized by visibility. Public content can be used by
+all roles. Employee content is intended for employee self-service. HR content is
+restricted to HR and admin users. Admin content is restricted to admin users.
+
+Public documents may include:
+- Office hours.
+- Public contacts.
+- General onboarding orientation.
+- Public town hall schedule.
+- Shared support channels.
+- General company process summaries.
+- Non-sensitive glossary terms.
+
+Public documents must not include:
+- Compensation calibration notes.
+- Employee investigation notes.
+- Production secrets.
+- Database credentials.
+- Admin runbook details.
+- Private medical or personal records.
+
+Users should phrase questions clearly. For example, "What is the public company
+code?" should return BMS-PUBLIC-100. "When is the weekly town hall?" should
+return Friday at 4:00 PM. "Who handles public onboarding questions?" should
+return the People Operations desk.
+
+Page 4: Public Service Channels
+
+The Service Desk handles laptop setup, approved software installation, Wi-Fi
+help, monitor requests, keyboard requests, mouse requests, headset requests,
+and basic troubleshooting. The Service Desk does not approve salary changes,
+admin role changes, or production database access.
+
+The Front Office team handles visitors, courier receipts, meeting room issues,
+and general facilities questions. Lost access badges should be reported to
+Facilities immediately. Visitor requests should include the visitor name,
+company, host, arrival date, arrival time, and meeting room if known.
+
+The People Operations desk handles public onboarding questions, general policy
+navigation, and directions to the correct HR contact. The People Operations
+desk can explain where to find public forms, but it does not share restricted
+HR investigation details in public channels.
+
+Page 5: Public Test Facts and Expected Answers
+
+Use these facts to test role-based RAG retrieval:
+- Public company code: BMS-PUBLIC-100.
+- Public office hours: Monday through Friday, 10:00 AM to 6:30 PM.
+- Weekly town hall: Friday at 4:00 PM.
+- Public help desk email: support@bms.example.
+- Public onboarding contact: People Operations desk.
+- Public IT support contact: Service Desk.
+- Public facilities contact: Front Office team.
+- General announcement retention: one year.
+
+All roles should be able to answer questions from this public document. If an
+ADMIN, HR, or EMPLOYEE user asks "What is the public company code?", the answer
+should include BMS-PUBLIC-100. If any logged-in user asks "When is the weekly
+town hall?", the answer should include Friday at 4:00 PM.
+
+Page 6: Public FAQ
+
+Question: Who can access public documents?
+Answer: ADMIN, HR, and EMPLOYEE users can access public documents.
+
+Question: What should I do if my laptop has a general issue?
+Answer: Contact the Service Desk.
+
+Question: Who handles visitor registration?
+Answer: The Front Office team handles visitor registration.
+
+Question: Can public documents include production credentials?
+Answer: No. Production credentials belong only in restricted admin procedures,
+and should not be exposed through the public knowledge base.
+
+Question: Can public documents explain HR investigation details?
+Answer: No. Investigation details are restricted and should not appear in public
+documents.

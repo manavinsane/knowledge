@@ -1,9 +1,149 @@
 HR Policy
 
-This document is restricted to HR users and ADMIN users.
+Access level: HR
+Visible to: HR, ADMIN
 
-HR can access employee records, recruitment process notes, compensation review
-guidelines, interview feedback workflows, and internal HR escalation procedures.
+This document is restricted to HR users and ADMIN users. Employees should not
+receive answers from this document unless they also have the HR or ADMIN role.
+It contains recruiting workflows, compensation review guidance, employee record
+procedures, employee relations escalation notes, and HR-only audit practices.
 
-Employees should not receive answers from this document unless they have the HR
-or ADMIN role.
+The internal recruitment tracker code is HR-HIRE-240. The HR document retention
+code for employee records is HR-RET-07. The sensitive employee relations
+escalation keyword is HR-CASE-SAFE.
+
+Page 1: Recruiting Workflow
+
+The HR candidate pipeline has four stages: applied, screening, panel, offer.
+Candidates enter the applied stage when their application is received. HR moves
+candidates to screening after checking basic eligibility, role fit, location
+requirements, and notice period. Panel interviews are scheduled only after the
+screening stage is complete.
+
+Interview feedback must be submitted within 24 hours after the interview. HR
+uses this rule to reduce delays and keep hiring decisions consistent. Late
+feedback is escalated to the recruiter and the hiring manager. Offer approvals
+require HR Lead approval before Finance approval.
+
+Recruiting test facts:
+- Internal recruitment tracker code: HR-HIRE-240.
+- Pipeline stages: applied, screening, panel, offer.
+- Interview feedback deadline: 24 hours after interview.
+- Offer approval order: HR Lead first, Finance second.
+- Recruiter escalation owner: assigned recruiter.
+
+Page 2: Compensation Review
+
+Compensation calibration happens twice per year, in April and October. HR uses
+the internal compensation band reference named HR-COMP-BANDS. Salary exception
+requests must include manager justification and HR Director approval.
+
+Employees can see their own payslip through approved self-service tools, but
+they cannot access compensation calibration notes. Compensation calibration
+notes may include peer comparison, range placement, performance context, and
+budget constraints. These notes are restricted to HR and ADMIN users.
+
+Compensation review checklist:
+- Confirm employee role and level.
+- Compare current compensation with HR-COMP-BANDS.
+- Review manager justification.
+- Review performance context.
+- Check exception history.
+- Route salary exception to HR Director if needed.
+
+Compensation test facts:
+- Calibration months: April and October.
+- Compensation band reference: HR-COMP-BANDS.
+- Salary exceptions require HR Director approval.
+- Employees cannot access calibration notes.
+
+Page 3: Employee Records
+
+HR record changes require a ticket in the People Operations queue. Legal name
+changes require government ID verification. Emergency contact updates are
+processed within two business days. The HR document retention code for employee
+records is HR-RET-07.
+
+Employee records may include employment status, department, manager, emergency
+contact, legal name, work location, and HR case references. HR must verify
+identity before processing sensitive changes. HR should never share another
+employee's record with an unauthorized employee.
+
+Record update process:
+- Receive People Operations ticket.
+- Verify requestor identity.
+- Check required evidence.
+- Update the HR system.
+- Add a short audit note.
+- Close the ticket with non-sensitive confirmation.
+
+Employee record test facts:
+- Record retention code: HR-RET-07.
+- Emergency contact update SLA: two business days.
+- Legal name changes require government ID verification.
+- HR record changes require a People Operations ticket.
+
+Page 4: Employee Relations Escalation
+
+Sensitive employee relations cases use the escalation keyword HR-CASE-SAFE.
+Only HR and ADMIN users may access internal investigation notes. The HR
+escalation owner is the Employee Relations Manager.
+
+Employee relations cases may include workplace conduct concerns, harassment
+complaints, conflict mediation, policy violations, or sensitive manager
+escalations. HR must maintain confidentiality, collect factual evidence, avoid
+unnecessary disclosure, and document decisions carefully.
+
+Escalation workflow:
+- Log the case with HR-CASE-SAFE.
+- Assign an Employee Relations Manager.
+- Identify immediate risk.
+- Preserve relevant evidence.
+- Schedule interviews when needed.
+- Record findings in restricted HR notes.
+- Close the case with documented outcome.
+
+Employee relations test facts:
+- Escalation keyword: HR-CASE-SAFE.
+- Escalation owner: Employee Relations Manager.
+- Investigation notes are restricted to HR and ADMIN.
+- HR must preserve relevant evidence.
+
+Page 5: HR Audits and Compliance
+
+HR audits are used to confirm that restricted HR processes are followed
+consistently. Audit checks include recruitment stage history, feedback
+timeliness, compensation exception approvals, record update evidence, and case
+closure documentation.
+
+HR-only audit reminders:
+- Do not export employee records to public drives.
+- Do not share compensation calibration notes with employees.
+- Do not include restricted investigation details in public documents.
+- Confirm that HR-HIRE-240 entries have complete stage history.
+- Confirm that HR-RET-07 retention handling is followed.
+
+HR audit test facts:
+- Recruitment tracker audit code: HR-HIRE-240.
+- Employee record retention code: HR-RET-07.
+- Compensation band reference: HR-COMP-BANDS.
+- Employee relations keyword: HR-CASE-SAFE.
+
+Page 6: HR FAQ
+
+Question: Can employees access this document?
+Answer: No. Employees should not receive answers from this document unless they
+have HR or ADMIN access.
+
+Question: When is compensation calibration?
+Answer: Compensation calibration happens in April and October.
+
+Question: What is the internal recruitment tracker code?
+Answer: HR-HIRE-240.
+
+Question: What is the HR employee records retention code?
+Answer: HR-RET-07.
+
+Question: Who owns sensitive employee relations escalation?
+Answer: The Employee Relations Manager owns sensitive employee relations
+escalation.
