@@ -1,0 +1,9 @@
+Admin Operations
+
+This document is restricted to ADMIN users.
+
+Admins can access system configuration procedures, database migration steps,
+role management rules, Pinecone index maintenance notes, and production support
+operations.
+
+HR and EMPLOYEE users should not receive answers from this document.

@@ -1,0 +1,9 @@
+HR Policy
+
+This document is restricted to HR users and ADMIN users.
+
+HR can access employee records, recruitment process notes, compensation review
+guidelines, interview feedback workflows, and internal HR escalation procedures.
+
+Employees should not receive answers from this document unless they have the HR
+or ADMIN role.

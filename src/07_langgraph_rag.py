@@ -14,6 +14,7 @@ Each call with the same thread_id picks up where it left off.
 """
 from typing import TypedDict, Annotated
 from dotenv import load_dotenv
+from functools import lru_cache
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from langgraph.checkpoint.memory import MemorySaver
@@ -21,14 +22,29 @@ from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_pinecone import PineconeVectorStore
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, SystemMessage
 
+from src.model.user import UserRole
+from src.rag.access import metadata_filter_for_role
+
 load_dotenv()
 
 INDEX_NAME = "rag-bms"
 
-embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
-vectorstore = PineconeVectorStore(index_name=INDEX_NAME, embedding=embeddings)
-retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+
+
+@lru_cache
+def get_vectorstore():
+    embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+    return PineconeVectorStore(index_name=INDEX_NAME, embedding=embeddings)
+
+
+def create_retriever_for_role(role: UserRole | str):
+    return get_vectorstore().as_retriever(
+        search_kwargs={
+            "k": 3,
+            "filter": metadata_filter_for_role(role),
+        }
+    )
 
 
 # ── State Schema ─────────────────────────────────────────────────
@@ -39,6 +55,7 @@ class RAGState(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
     context: str          # retrieved document text
     should_retrieve: bool  # routing decision
+    role: UserRole
 
 
 # ── Node 1: Routing ───────────────────────────────────────────────
@@ -54,6 +71,7 @@ def decide(state: RAGState) -> dict:
 # ── Node 2: Retrieval ─────────────────────────────────────────────
 def retrieve(state: RAGState) -> dict:
     query = state["messages"][-1].content
+    retriever = create_retriever_for_role(state.get("role", UserRole.EMPLOYEE))
     docs = retriever.invoke(query)
     context = "\n\n---\n\n".join(doc.page_content for doc in docs)
     return {"context": context}
@@ -119,7 +137,7 @@ if __name__ == "__main__":
     for message in conversation:
         print(f"\nHuman: {message}")
         result = graph.invoke(
-            {"messages": [HumanMessage(content=message)]},
+            {"messages": [HumanMessage(content=message)], "role": UserRole.EMPLOYEE},
             config=config,
         )
         response = result["messages"][-1].content

@@ -1,0 +1,8 @@
+Employee Handbook
+
+This document is restricted to EMPLOYEE users and ADMIN users.
+
+Employees can access onboarding steps, attendance guidelines, leave request
+processes, equipment request instructions, and general workplace procedures.
+
+HR-only processes and admin-only operations are not included in this handbook.

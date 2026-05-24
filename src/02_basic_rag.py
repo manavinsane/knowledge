@@ -8,26 +8,38 @@ The | operator chains Runnables together — output of each step
 becomes input of the next. This is LCEL.
 """
 from dotenv import load_dotenv
+from functools import lru_cache
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_pinecone import PineconeVectorStore
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough, RunnableParallel
 
+from src.model.user import UserRole
+from src.rag.access import metadata_filter_for_role
+
 load_dotenv()
 
 INDEX_NAME = "rag-bms"
 
 # ── Load vector store (already populated by 01_ingest.py) ────────
-embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
-vectorstore = PineconeVectorStore(
-    index_name=INDEX_NAME,
-    embedding=embeddings,
-)
+@lru_cache
+def get_vectorstore():
+    embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+    return PineconeVectorStore(
+        index_name=INDEX_NAME,
+        embedding=embeddings,
+    )
 
-# as_retriever() turns the vector store into a Retriever.
-# A Retriever has a standard invoke(query) → list[Document] interface.
-retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
+
+def create_retriever_for_role(role: UserRole | str):
+    return get_vectorstore().as_retriever(
+        search_kwargs={
+            "k": 3,
+            "filter": metadata_filter_for_role(role),
+        }
+    )
+
 
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 
@@ -59,15 +71,21 @@ Context:
 #     llm      → calls the model, returns AIMessage
 #     parser   → extracts just the string from AIMessage
 #
-rag_chain = (
-    RunnableParallel(
-        context=retriever | format_docs,
-        question=RunnablePassthrough(),
+def create_rag_chain(role: UserRole | str):
+    retriever = create_retriever_for_role(role)
+    return (
+        RunnableParallel(
+            context=retriever | format_docs,
+            question=RunnablePassthrough(),
+        )
+        | prompt
+        | llm
+        | StrOutputParser()
     )
-    | prompt
-    | llm
-    | StrOutputParser()
-)
+
+
+def answer_question(question: str, role: UserRole | str = UserRole.EMPLOYEE) -> str:
+    return create_rag_chain(role).invoke(question)
 
 
 if __name__ == "__main__":
@@ -76,6 +94,8 @@ if __name__ == "__main__":
     print("=" * 60)
 
     questions = [
+        "What HR policies are available?",
+        "What employee onboarding steps are available?",
         "you know who is the rulling party in west bengal right now?",
         "What are the different types of text splitters?",
         "How does an agent decide which tool to use?",
@@ -84,6 +104,6 @@ if __name__ == "__main__":
 
     for q in questions:
         print(f"\nQ: {q}")
-        answer = rag_chain.invoke(q)
+        answer = answer_question(q, role=UserRole.EMPLOYEE)
         print(f"A: {answer}")
         print("-" * 60)

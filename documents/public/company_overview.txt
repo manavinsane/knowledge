@@ -1,0 +1,10 @@
+Company Overview
+
+This document is public inside the organization. It can be accessed by ADMIN,
+HR, and EMPLOYEE users.
+
+The company uses the internal knowledge base for policy lookup, onboarding
+support, engineering references, and operational answers.
+
+If a user asks about general company information, office hours, support channels,
+or public internal documentation, this public document can be used.

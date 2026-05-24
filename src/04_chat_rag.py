@@ -11,6 +11,7 @@ Solution: first rewrite the question into a standalone question using
 the chat history, THEN retrieve and answer.
 """
 from dotenv import load_dotenv
+from functools import lru_cache
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_pinecone import PineconeVectorStore
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
@@ -18,14 +19,29 @@ from langchain_core.messages import HumanMessage, AIMessage
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 
+from src.model.user import UserRole
+from src.rag.access import metadata_filter_for_role
+
 load_dotenv()
 
 INDEX_NAME = "rag-bms"
 
-embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
-vectorstore = PineconeVectorStore(index_name=INDEX_NAME, embedding=embeddings)
-retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+
+
+@lru_cache
+def get_vectorstore():
+    embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+    return PineconeVectorStore(index_name=INDEX_NAME, embedding=embeddings)
+
+
+def create_retriever_for_role(role: UserRole | str):
+    return get_vectorstore().as_retriever(
+        search_kwargs={
+            "k": 3,
+            "filter": metadata_filter_for_role(role),
+        }
+    )
 
 
 def format_docs(docs):
@@ -47,6 +63,7 @@ contextualize_chain = contextualize_prompt | llm | StrOutputParser()
 
 def get_retriever_input(state: dict) -> list:
     """Rewrite the question if there is history; otherwise use it as-is."""
+    retriever = create_retriever_for_role(state.get("role", UserRole.EMPLOYEE))
     chat_history = state.get("chat_history", [])
     if chat_history:
         standalone = contextualize_chain.invoke(state)
@@ -73,8 +90,14 @@ conversational_rag = (
 )
 
 
-def chat(question: str, history: list) -> str:
-    return conversational_rag.invoke({"input": question, "chat_history": history})
+def chat(
+    question: str,
+    history: list,
+    role: UserRole | str = UserRole.EMPLOYEE,
+) -> str:
+    return conversational_rag.invoke(
+        {"input": question, "chat_history": history, "role": role}
+    )
 
 
 if __name__ == "__main__":

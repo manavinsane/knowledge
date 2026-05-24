@@ -8,20 +8,29 @@ Each retriever type solves a different retrieval problem.
 Run 01_ingest.py before this.
 """
 from dotenv import load_dotenv
+from functools import lru_cache
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_pinecone import PineconeVectorStore
 from langchain.retrievers import MultiQueryRetriever, ContextualCompressionRetriever
 from langchain.retrievers.document_compressors import LLMChainExtractor
 
+from src.model.user import UserRole
+from src.rag.access import metadata_filter_for_role
+
 load_dotenv()
 
 INDEX_NAME = "rag-bms"
 
-embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
-vectorstore = PineconeVectorStore(index_name=INDEX_NAME, embedding=embeddings)
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 
 QUERY = "How does memory work in LangChain agents?"
+DEMO_ROLE = UserRole.EMPLOYEE
+
+
+@lru_cache
+def get_vectorstore():
+    embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+    return PineconeVectorStore(index_name=INDEX_NAME, embedding=embeddings)
 
 
 def show(label, docs):
@@ -42,7 +51,9 @@ if __name__ == "__main__":
     # ── 1. Basic Similarity Search ────────────────────────────────
     # Embeds the query, finds the k nearest vectors in Pinecone.
     # Simple, fast, but can return near-duplicate chunks.
-    basic = vectorstore.as_retriever(search_kwargs={"k": 3})
+    role_filter = metadata_filter_for_role(DEMO_ROLE)
+    vectorstore = get_vectorstore()
+    basic = vectorstore.as_retriever(search_kwargs={"k": 3, "filter": role_filter})
     show("1. BASIC SIMILARITY (k=3)", basic.invoke(QUERY))
 
     # ── 2. MMR – Maximal Marginal Relevance ───────────────────────
@@ -51,7 +62,12 @@ if __name__ == "__main__":
     # lambda_mult: 1.0 = pure relevance, 0.0 = pure diversity.
     mmr = vectorstore.as_retriever(
         search_type="mmr",
-        search_kwargs={"k": 3, "fetch_k": 10, "lambda_mult": 0.7},
+        search_kwargs={
+            "k": 3,
+            "fetch_k": 10,
+            "lambda_mult": 0.7,
+            "filter": role_filter,
+        },
     )
     show("2. MMR – RELEVANCE + DIVERSITY (lambda=0.7)", mmr.invoke(QUERY))
 

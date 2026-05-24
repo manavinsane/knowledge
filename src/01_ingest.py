@@ -9,12 +9,15 @@ Run this FIRST before any other script.
 """
 import os
 import time
+from hashlib import sha256
 from dotenv import load_dotenv
 from langchain_community.document_loaders import DirectoryLoader, TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings
 from langchain_pinecone import PineconeVectorStore
 from pinecone import Pinecone, ServerlessSpec
+
+from src.rag.access import visibility_from_source
 
 load_dotenv()
 
@@ -41,9 +44,18 @@ def ingest():
         loader_kwargs={"encoding": "utf-8"},
     )
     docs = loader.load()
+    for doc in docs:
+        source = doc.metadata.get("source", "")
+        doc.metadata["visibility"] = visibility_from_source(source)
+        doc.metadata["document_type"] = doc.metadata["visibility"].lower()
+
     print(f"      Loaded {len(docs)} file(s)")
     for doc in docs:
-        print(f"        - {doc.metadata['source']}  ({len(doc.page_content):,} chars)")
+        print(
+            f"        - {doc.metadata['source']} "
+            f"[{doc.metadata['visibility']}] "
+            f"({len(doc.page_content):,} chars)"
+        )
 
     # ── 2. Split Documents ────────────────────────────────────────
     # RecursiveCharacterTextSplitter tries delimiters in order:
@@ -56,6 +68,12 @@ def ingest():
         separators=["\n\n", "\n", ". ", " ", ""],
     )
     splits = splitter.split_documents(docs)
+    ids = []
+    for index, split in enumerate(splits):
+        source = split.metadata.get("source", "unknown")
+        split.metadata["chunk_index"] = index
+        ids.append(sha256(f"{source}:{index}".encode("utf-8")).hexdigest())
+
     print(f"      {len(docs)} file(s) → {len(splits)} chunks")
     print(f"      Sample chunk:\n        {splits[0].page_content[:150].strip()}...")
 
@@ -85,11 +103,8 @@ def ingest():
     # it into Pinecone in batches.
     print("\n[4/4] Embedding chunks and upserting into Pinecone ...")
     embeddings = OpenAIEmbeddings(model=EMBEDDING_MODEL)
-    vectorstore = PineconeVectorStore.from_documents(
-        documents=splits,
-        embedding=embeddings,
-        index_name=INDEX_NAME,
-    )
+    vectorstore = PineconeVectorStore(index_name=INDEX_NAME, embedding=embeddings)
+    vectorstore.add_documents(documents=splits, ids=ids)
     print(f"      Upserted {len(splits)} chunks into Pinecone index '{INDEX_NAME}'")
 
     print("\nDone! Now run 02_basic_rag.py to query your knowledge base.")
