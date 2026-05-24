@@ -59,6 +59,7 @@ async def register_user(
     token_payload = {
         "id": str(new_user.id),
         "email": new_user.email,
+        "role": new_user.role.value,
     }
 
     access_token, refresh_token = create_token_pair(token_payload)
@@ -100,6 +101,7 @@ async def login(
     token_payload = {
         "id": str(user.id),
         "email": user.email,
+        "role": user.role.value,
     }
 
     access_token, refresh_token = create_token_pair(token_payload)

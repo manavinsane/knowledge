@@ -5,6 +5,8 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from src.router.rag import legacy_router as legacy_rag_router
+from src.router.rag import router as rag_router
 from src.router.user import router as auth_router
 
 # Load environment variables
@@ -37,6 +39,8 @@ def create_app() -> FastAPI:
     )
 
     app.include_router(auth_router)
+    app.include_router(rag_router)
+    app.include_router(legacy_rag_router)
 
     @app.get("/health", tags=["system"])
     async def health_check():
@@ -48,16 +52,6 @@ def create_app() -> FastAPI:
             "message": "RAG BMS API is running",
             "docs": "/docs",
             "health": "/health",
-        }
-
-    @app.post("/ask", tags=["rag"])
-    async def ask_question(question: str):
-        # Replace this placeholder with the project RAG chain when it is ready.
-        answer = f"Received question: {question}"
-
-        return {
-            "question": question,
-            "answer": answer,
         }
 
     return app
