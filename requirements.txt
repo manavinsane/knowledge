@@ -10,5 +10,13 @@ pinecone
 python-dotenv
 pypdf
 fastapi
-jose
+python-jose[cryptography]
 sqlmodel
+uvicorn
+passlib[bcrypt]
+bcrypt==4.0.1
+asyncpg
+email-validator
+greenlet
+alembic
+psycopg2-binary

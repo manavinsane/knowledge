@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 
 from jose import jwt
 
-import src.config.config as config
+import src.core.config as config
 
 
 def create_token_pair(payload: dict):
