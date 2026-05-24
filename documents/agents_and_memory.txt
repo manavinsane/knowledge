@@ -1,0 +1,189 @@
+LangChain Agents, Memory, and Output Parsing
+=============================================
+
+## Agents
+
+An Agent is an LLM that can decide which tools to use and when to use them.
+Instead of a fixed chain, an agent loops: Think → Act → Observe → Repeat.
+This is called the ReAct pattern (Reasoning + Acting).
+
+The agent loop:
+1. The LLM receives the user question and a list of available tools
+2. It thinks about which tool to use (Reasoning)
+3. It calls the tool with specific arguments (Acting)
+4. It observes the tool's output
+5. It decides: answer now, or use another tool?
+6. Repeat until it has enough information
+
+## Defining Tools
+
+Tools are Python functions with a clear docstring. The docstring is what the LLM reads
+to decide when to use the tool - so good docstrings are critical for tool selection.
+
+Using the @tool decorator:
+  from langchain_core.tools import tool
+
+  @tool
+  def search_database(query: str) -> str:
+      """Search the company database for employee and project information.
+      Use this when the user asks about specific employees, teams, or projects."""
+      # your implementation here
+      return results
+
+The function signature defines the tool's input schema. The LLM will generate
+valid arguments matching the parameter types.
+
+## Tool Calling vs Old Text Parsing
+
+Old approach: LLM outputs text with tool name and args, code parses it with regex.
+Modern approach: LLM outputs structured tool call objects directly.
+
+With tool calling:
+  model.bind_tools([tool1, tool2])
+  # LLM returns AIMessage with tool_calls field (structured JSON, not text)
+
+Tool calling is more reliable because it uses the model's native function calling
+capability, validated against the tool's schema.
+
+## create_react_agent
+
+The modern way to create agents uses LangGraph under the hood:
+  from langgraph.prebuilt import create_react_agent
+
+  agent = create_react_agent(
+      model=llm,
+      tools=[search_docs, calculator],
+  )
+  result = agent.invoke({"messages": [("human", "your question")]})
+
+The old AgentExecutor is legacy - prefer create_react_agent for new projects.
+
+## Memory in LangChain
+
+Memory allows a chatbot to remember previous turns in the conversation.
+
+Old way (deprecated): ConversationBufferMemory, ConversationSummaryMemory classes.
+
+New way: pass chat_history as a list of messages manually in each call.
+  chat_history = []
+  response = chain.invoke({"input": question, "chat_history": chat_history})
+  chat_history.append(HumanMessage(content=question))
+  chat_history.append(AIMessage(content=response))
+
+In LangGraph: use a checkpointer. The graph state is automatically saved and loaded
+for each thread_id, enabling true persistence without manual history management.
+
+Types of memory strategies:
+- Buffer: store all messages - simple but uses lots of tokens as history grows
+- Window: store only the last K messages - fixed token cost, loses old context
+- Summary: summarize older messages, keep recent ones verbatim - saves tokens but loses detail
+- Entity: extract and track entities (people, places, facts) mentioned in conversation
+
+Tradeoffs:
+- Buffer is accurate but gets expensive quickly for long conversations
+- Summary saves tokens but the LLM may hallucinate or lose nuance in summaries
+- Window is predictable but abruptly loses context beyond the window
+
+## Structured Output
+
+Getting structured data (JSON, Pydantic models) from LLMs.
+
+Method 1 - with_structured_output (most reliable):
+  from pydantic import BaseModel
+
+  class Answer(BaseModel):
+      answer: str
+      confidence: float
+      sources: list[str]
+
+  structured_llm = llm.with_structured_output(Answer)
+  result = structured_llm.invoke("What is the capital of France?")
+  # result is an Answer object, not a string
+  # result.answer = "Paris"
+  # result.confidence = 0.99
+
+This works by using tool calling internally - the LLM is forced to return
+valid JSON matching the schema.
+
+Method 2 - JsonOutputParser: parses free-form JSON from LLM output (less reliable).
+Method 3 - PydanticOutputParser: adds format instructions to the prompt asking the LLM
+to output JSON, then parses and validates. Works but brittle.
+
+Recommendation: use with_structured_output for all new code.
+
+## Output Parsers
+
+StrOutputParser: extracts just the string content from an LLM response.
+  chain = prompt | llm | StrOutputParser()  # returns string, not AIMessage
+
+JsonOutputParser: parses JSON string from LLM output.
+PydanticOutputParser: parses and validates against a Pydantic model.
+CommaSeparatedListOutputParser: splits the response by commas into a list.
+
+## LangSmith - Observability and Tracing
+
+LangSmith is the observability platform for LangChain applications.
+
+Setup:
+  export LANGCHAIN_TRACING_V2=true
+  export LANGCHAIN_API_KEY=your-key
+
+When enabled, every chain call is automatically traced. You can see:
+- What was sent to the LLM at each step
+- What documents were retrieved
+- Latency per step
+- Token usage and costs
+- The full input/output at every node
+
+LangSmith also supports evaluation: create test datasets with questions and expected
+answers, run your chain against them, and score the results.
+
+## LangGraph - Graph-based Agent Orchestration
+
+LangGraph models your application as a directed graph where:
+- Nodes are Python functions that do work (call LLM, retrieve docs, run tools)
+- Edges connect nodes (linear flow)
+- Conditional edges route based on logic (if/else branching)
+
+State is a TypedDict that gets passed between nodes. Each node reads from state
+and returns a dict with updates to apply to the state.
+
+  class MyState(TypedDict):
+      messages: Annotated[list, add_messages]  # add_messages appends instead of replacing
+      context: str
+
+Checkpointers enable persistence:
+- MemorySaver: stores state in memory (development)
+- PostgresSaver: stores state in PostgreSQL (production)
+
+With a checkpointer, each conversation has a thread_id. The graph automatically
+saves state after each step and loads it at the start of each call.
+
+Human-in-the-loop: interrupt the graph at a specific node, let a human review,
+then resume. The graph uses interrupt_before or interrupt_after to pause.
+The human calls graph.update_state() to modify state, then graph.invoke() to resume.
+
+Multi-agent systems: one supervisor agent routes questions to specialist agents.
+Each specialist has its own tools and focus area. LangGraph handles the routing
+using conditional edges based on the supervisor's decision.
+
+## Error Handling
+
+In LCEL chains:
+  chain.with_fallbacks([fallback_chain])  # use fallback if main chain fails
+  chain.with_retry(stop_after_attempt=3)  # retry on transient failures
+
+In LangGraph: use conditional edges to detect errors and route to error handling nodes.
+This is more powerful because you can inspect what failed and take different actions.
+
+## Multi-agent Architecture
+
+Supervisor pattern:
+1. Supervisor agent receives the user question
+2. It decides which specialist agent to call (SQL expert, doc search, calculator, etc)
+3. Specialist executes and returns results
+4. Supervisor decides: done, or call another specialist?
+5. Returns final answer
+
+LangGraph implements this as a graph where the supervisor node has conditional edges
+to each specialist node. Each specialist has its own set of tools.

@@ -1,0 +1,131 @@
+LangChain Developer Guide
+==========================
+
+## LCEL - LangChain Expression Language
+
+LCEL is the declarative way to compose chains in LangChain using the pipe | operator.
+Instead of manually calling each step, you declare the flow and LangChain handles streaming,
+async, batching, and parallel execution automatically.
+
+Example:
+  chain = prompt | llm | output_parser
+  result = chain.invoke({"question": "What is AI?"})
+
+LCEL gives you built-in streaming, async support (ainvoke, astream), batch processing,
+and parallel execution out of the box. This is the modern approach - the old LLMChain
+class is now deprecated.
+
+## Runnable Interface
+
+Everything in LCEL is a Runnable. The standard interface includes:
+- invoke(input) - single call
+- stream(input) - stream output tokens
+- batch(inputs) - process multiple inputs
+- ainvoke, astream, abatch - async versions
+
+Key Runnable types:
+- RunnablePassthrough: passes input through unchanged, useful in parallel chains
+- RunnableLambda: wraps any Python function as a Runnable
+- RunnableParallel: runs multiple chains simultaneously, not sequentially
+
+RunnableParallel Example:
+  chain = RunnableParallel(
+      summary=summary_chain,
+      translation=translate_chain
+  )
+  # Both summary_chain and translate_chain run at the same time
+
+## RAG Pipeline
+
+RAG stands for Retrieval Augmented Generation. It enhances LLM responses by fetching
+relevant context from a knowledge base before generating an answer.
+
+The full pipeline:
+1. Document Loaders - load content from files, URLs, databases
+2. Text Splitters - break large documents into manageable chunks
+3. Embeddings - convert text chunks into numerical vectors
+4. Vector Store - store and index the vectors for similarity search
+5. Retriever - search the vector store for relevant chunks
+6. Chain - combine retrieved context with the question and generate an answer
+
+Without RAG, LLMs can only answer from their training data. With RAG, they can answer
+from your private documents, updated data, or specialized knowledge bases.
+
+## Document Loaders
+
+Document Loaders load content from various sources and return Document objects.
+Each Document has page_content (the text) and metadata (source, page number, etc).
+
+Common loaders:
+- PyPDFLoader: loads PDF files, one Document per page
+- TextLoader: loads plain text files
+- CSVLoader: loads CSV files, one Document per row
+- WebBaseLoader: fetches and parses web pages
+- DirectoryLoader: loads all files matching a pattern from a directory
+- UnstructuredFileLoader: handles many formats (Word, HTML, etc)
+- NotionDBLoader: loads from Notion databases
+
+## Text Splitters
+
+Text splitters break large documents into smaller chunks for embedding.
+
+RecursiveCharacterTextSplitter is the most commonly used. It tries to split by:
+1. Double newlines (paragraph boundaries)
+2. Single newlines
+3. Sentences
+4. Characters
+
+Key parameters:
+- chunk_size: maximum characters per chunk (typically 500-1500)
+- chunk_overlap: characters shared between adjacent chunks (typically 10-20% of chunk_size)
+
+Overlap is important because it prevents context from being cut off at chunk boundaries.
+A sentence split across two chunks would lose meaning without overlap.
+
+Other splitters:
+- CharacterTextSplitter: simple split by a separator character
+- TokenTextSplitter: splits by token count (better for LLM context windows)
+- MarkdownHeaderTextSplitter: splits by markdown headers, preserves document structure
+- SemanticChunker: uses embeddings to split by meaning, not just characters
+
+## Vector Stores
+
+A vector store is a database optimized for storing and searching embedding vectors.
+When you do a similarity search, it finds vectors that are mathematically close to
+your query vector - which means semantically similar content.
+
+Common vector stores:
+- FAISS: local, fast, no server needed, good for development
+- Chroma: lightweight, persistent to disk, great for learning and prototyping
+- Pinecone: managed cloud service, scales to billions of vectors
+- Weaviate: supports hybrid search (vector + keyword)
+- PGVector: adds vector support to PostgreSQL
+
+The difference between a Vector Store and a Retriever:
+- Vector Store is the database that stores embeddings
+- Retriever is the interface that queries it and returns Documents
+- Use vectorstore.as_retriever() to convert a vector store into a retriever
+
+## Types of Retrievers
+
+VectorStoreRetriever: basic similarity search, finds the k most similar chunks.
+
+MultiQueryRetriever: the LLM generates multiple variations of your query, retrieves
+docs for each variation, then deduplicates results. Better for complex or ambiguous
+questions because different phrasings may retrieve different relevant chunks.
+
+SelfQueryRetriever: extracts metadata filters from natural language. If you ask
+"Python tutorials from 2024", it generates a filter for year=2024 automatically.
+
+ParentDocumentRetriever: stores small chunks for precise retrieval, but returns
+the larger parent chunk for better context. Best of both worlds.
+
+EnsembleRetriever: combines multiple retrievers with weighted scores. Often combines
+vector similarity search with BM25 keyword search for hybrid retrieval.
+
+ContextualCompressionRetriever: after retrieving documents, an LLM compresses each
+document to only include the parts relevant to the query. Reduces noise.
+
+MMR - Maximal Marginal Relevance: retrieval strategy that balances relevance AND
+diversity. lambda_mult parameter controls the tradeoff: 1.0 = pure relevance,
+0.0 = pure diversity. Prevents returning 3 near-identical chunks.
